@@ -1,0 +1,9 @@
+root:x:0:dude
+nogroup:x:65534:
+priv-admin:x:0:root,admin
+priv-operator:x:1001:admin,oper
+priv-user:x:1002:admin,oper,dude
+ipmi:x:1003:root,admin,oper,dude
+web:x:1004:root,admin,oper,dude
+redfish:x:1005:root,admin,oper,dude
+newgroup:x:0:dude
