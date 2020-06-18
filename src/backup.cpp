@@ -100,10 +100,15 @@ void Backup::restore() const
 
 void Backup::backupFile(const char* path) const
 {
-    const fs::path src = config.rootFs / path;
+    fs::path src = config.rootFs / path;
     if (!fs::exists(src))
     {
-        return;
+        // try to get the file from RO
+        src = config.readOnlyFs / path;
+        if (!fs::exists(src))
+        {
+            return;
+        }
     }
 
     const fs::path dst = tmpDir / path;
@@ -123,9 +128,15 @@ void Backup::restoreFile(const char* path) const
     const fs::path dst = config.rootFs / path;
 
     // restore permissions
-    if (fs::exists(dst))
+    fs::path permsFile = dst;
+    if (!fs::exists(permsFile))
     {
-        const fs::perms p = fs::status(dst).permissions();
+        // try to get permissions from RO
+        permsFile = config.readOnlyFs / path;
+    }
+    if (fs::exists(permsFile))
+    {
+        const fs::perms p = fs::status(permsFile).permissions();
         fs::permissions(src, p, fs::perm_options::replace);
     }
 
