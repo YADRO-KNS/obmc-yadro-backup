@@ -13,6 +13,7 @@ namespace fs = std::filesystem;
 /** @brief List of base configuration files/directories. */
 static const std::vector<const char*> baseConfigs = {
     "etc/dropbear/dropbear_rsa_host_key",
+    "etc/ipmi_pass",
     "etc/machine-id",
 };
 
