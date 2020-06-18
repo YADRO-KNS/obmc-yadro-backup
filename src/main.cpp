@@ -68,10 +68,24 @@ int main(int argc, char* argv[])
         switch (val)
         {
             case 'b':
+                if (operation.has_value())
+                {
+                    fprintf(stderr,
+                            "Mutually exclusive option: opeartion is "
+                            "already defined\n");
+                    return EXIT_FAILURE;
+                }
                 operation = Operation::backup;
                 config.backupFile = optarg;
                 break;
             case 'r':
+                if (operation.has_value())
+                {
+                    fprintf(stderr,
+                            "Mutually exclusive option: opeartion is "
+                            "already defined\n");
+                    return EXIT_FAILURE;
+                }
                 operation = Operation::restore;
                 config.backupFile = optarg;
                 break;
