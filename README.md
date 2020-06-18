@@ -2,6 +2,21 @@
 The project provides console utility that can be used for backup and restore
 OpenBMC' configuration files.
 
+## Backup and restore
+The backup/restore procedures are based on saving and writing configuration
+files of the OpenBMC system.
+A list of configuration files is defined as a static list of paths. These files
+are added to a result archive during backup.
+The restore operation extracts the files and lays them out to the root FS.
+
+### User accounts
+User accounts, groups and passwords are backed up as a diff between RO partition
+(build-in accounts data) and RW partition (user defined accounts data).
+The restore procedure handles these diffs and makes changes for allowed data
+only.
+This way allows to prevent modification of some critical configuration, such as
+a root password or an end user memberships.
+
 ## Build with OpenBMC SDK
 OpenBMC SDK contains toolchain and all dependencies needed for building the
 project. See [official documentation](https://github.com/openbmc/docs/blob/master/development/dev-environment.md#download-and-install-sdk) for details.
