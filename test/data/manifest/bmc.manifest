@@ -1,0 +1,3 @@
+HOSTNAME="bmc"
+MACHINE="nicole"
+VERSION="v2.190.0-dev"
