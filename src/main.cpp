@@ -38,6 +38,7 @@ static void printHelp(const char* app)
     puts("  -r, --restore=FILE   Restore configuration from backup file");
     puts("  -a, --skip-accounts  Skip accounts data");
     puts("  -n, --skip-network   Skip network configuration");
+    puts("  -y, --yes            Do not ask for confirmation");
     puts("  -h, --help           Print this help and exit");
 }
 
@@ -53,11 +54,12 @@ int main(int argc, char* argv[])
         {"restore",       required_argument, nullptr, 'r'},
         {"skip-accounts", no_argument,       nullptr, 'a'},
         {"skip-network",  no_argument,       nullptr, 'n'},
+        {"yes",           no_argument,       nullptr, 'y'},
         {"help",          no_argument,       nullptr, 'h'},
         {nullptr,         0,                 nullptr,  0 }
     };
     // clang-format on
-    const char* shortOpts = "b:r:anh";
+    const char* shortOpts = "b:r:anyh";
 
     opterr = 0; // prevent native error messages
 
@@ -94,6 +96,9 @@ int main(int argc, char* argv[])
                 break;
             case 'n':
                 config.handleNetwork = false;
+                break;
+            case 'y':
+                config.unattendedMode = true;
                 break;
             case 'h':
                 printHelp(argv[0]);

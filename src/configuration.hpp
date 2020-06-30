@@ -25,4 +25,7 @@ struct Configuration
 
     /** @brief Path to the read only file system. */
     std::filesystem::path readOnlyFs = "/run/initramfs/ro";
+
+    /** @brief Unattended mode (enable/disable flag). */
+    bool unattendedMode = false;
 };
