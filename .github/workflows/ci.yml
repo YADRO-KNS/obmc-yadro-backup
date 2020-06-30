@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: install gtest
+      run: mkdir /tmp/gtest && git clone --depth 1 --branch v1.8.x https://github.com/google/googletest.git /tmp/gtest && cd /tmp/gtest && sudo cmake -DINSTALL_GTEST=ON . && sudo cmake --build . --target install
+    - name: install meson
+      run: sudo apt install --no-install-recommends --yes meson
+    - name: build
+      run: mkdir _biuld && meson _build && ninja -C _build
+    - name: test
+      run: ninja -C _build test

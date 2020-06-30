@@ -5,6 +5,7 @@
 #include "manifest.hpp"
 
 #include <fstream>
+#include <set>
 
 #include <gtest/gtest.h>
 
@@ -45,9 +46,9 @@ class BackupTest : public ::testing::Test
         fs::remove_all(tmpDir);
     }
 
-    std::vector<std::string> fileList(const fs::path& archive)
+    std::set<std::string> fileList(const fs::path& archive)
     {
-        std::vector<std::string> files;
+        std::set<std::string> files;
 
         std::string cmd = "tar tf ";
         cmd += archive;
@@ -61,7 +62,7 @@ class BackupTest : public ::testing::Test
         while (fgets(buf, sizeof(buf), pipe))
         {
             const size_t len = strlen(buf);
-            files.emplace_back(std::string(buf + 1, buf + len - 1));
+            files.insert(std::string(buf + 1, buf + len - 1));
         }
         pclose(pipe);
         return files;
@@ -86,8 +87,8 @@ TEST_F(BackupTest, BackupFull)
     Backup bk(conf);
     bk.backup();
 
-    const std::vector<std::string> real = fileList(arc);
-    const std::vector<std::string> expect = {
+    const std::set<std::string> real = fileList(arc);
+    const std::set<std::string> expect = {
         "/",
         "/bmc.manifest",
         "/var/",
@@ -121,8 +122,8 @@ TEST_F(BackupTest, BackupNoAcc)
     Backup bk(conf);
     bk.backup();
 
-    const std::vector<std::string> real = fileList(arc);
-    const std::vector<std::string> expect = {
+    const std::set<std::string> real = fileList(arc);
+    const std::set<std::string> expect = {
         "/",
         "/bmc.manifest",
         "/var/",
@@ -155,8 +156,8 @@ TEST_F(BackupTest, BackupNoAccNoNet)
     Backup bk(conf);
     bk.backup();
 
-    const std::vector<std::string> real = fileList(arc);
-    const std::vector<std::string> expect = {
+    const std::set<std::string> real = fileList(arc);
+    const std::set<std::string> expect = {
         "/",
         "/bmc.manifest",
         "/etc/",
