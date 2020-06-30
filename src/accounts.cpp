@@ -25,12 +25,13 @@ static const char* shadowFile = "shadow";
 static constexpr uint16_t minUserId = 1000;
 
 // clang-format off
-/** @brief List of users, that created by OpenBMC but can be changed by an end
- *         user. */
+/** @brief List of users, that are created by OpenBMC but can be changed by an
+ *         end user.
+ */
 static const std::set<const char*> allowedUsers = {
     "admin"
 };
-/** @brief List of groups which membership can be modified by an end user. */
+/** @brief List of groups to which an end user may add or remove members. */
 static const std::set<const char*> allowedGroups = {
     "priv-admin",
     "priv-operator",

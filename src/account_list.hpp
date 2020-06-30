@@ -102,9 +102,9 @@ class AccountList : public std::vector<T>
     void remove(const C& filter, bool ifExists)
     {
         auto pred = [&filter, ifExists](const auto& entry) {
-            const bool isExists = std::find(filter.begin(), filter.end(),
-                                            entry.name()) != filter.end();
-            return isExists == ifExists;
+            const bool doesExist = std::find(filter.begin(), filter.end(),
+                                             entry.name()) != filter.end();
+            return doesExist == ifExists;
         };
         this->erase(std::remove_if(this->begin(), this->end(), pred),
                     this->end());
