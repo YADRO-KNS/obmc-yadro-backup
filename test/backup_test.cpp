@@ -78,6 +78,7 @@ TEST_F(BackupTest, BackupFull)
     const fs::path arc = tmpDir / "backup.tar.gz";
 
     Configuration conf;
+    conf.unattendedMode = true;
     conf.backupFile = arc;
     conf.rootFs = rwRoot;
     conf.readOnlyFs = roRoot;
@@ -111,6 +112,7 @@ TEST_F(BackupTest, BackupNoAcc)
     const fs::path arc = tmpDir / "backup.tar.gz";
 
     Configuration conf;
+    conf.unattendedMode = true;
     conf.backupFile = arc;
     conf.handleAccounts = false;
     conf.rootFs = rwRoot;
@@ -143,6 +145,7 @@ TEST_F(BackupTest, BackupNoAccNoNet)
     const fs::path arc = tmpDir / "backup.tar.gz";
 
     Configuration conf;
+    conf.unattendedMode = true;
     conf.backupFile = arc;
     conf.handleAccounts = false;
     conf.handleNetwork = false;
@@ -169,6 +172,7 @@ TEST_F(BackupTest, Restore)
     const fs::path arc = tmpDir / "backup.tar.gz";
 
     Configuration conf;
+    conf.unattendedMode = true;
     conf.backupFile = arc;
     conf.rootFs = rwRoot;
     conf.readOnlyFs = roRoot;

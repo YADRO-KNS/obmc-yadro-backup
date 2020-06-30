@@ -4,26 +4,26 @@
 #pragma once
 
 #include <filesystem>
+#include <map>
 
 /**
  * @struct Manifest
  * @brief Manifest file.
  */
-struct Manifest
+class Manifest
 {
-    /** @brief Version of OS. */
-    std::string osVersion;
+  private:
+    Manifest() = default;
 
+  public:
     /**
-     * @brief Create manifest from os-release file.
+     * @brief Constructor - create manifest for current system.
      *
      * @param[in] rootFs path to the root FS
      *
      * @throw std::runtime_error in case of errors
-     *
-     * @return manifest instance
      */
-    static Manifest fromOsRelease(const std::filesystem::path& rootFs);
+    Manifest(const std::filesystem::path& rootFs);
 
     /**
      * @brief Load manifest from file.
@@ -44,4 +44,20 @@ struct Manifest
      * @throw std::runtime_error in case of errors
      */
     void save(const std::filesystem::path& dir) const;
+
+    /**
+     * @brief Print manifest data to stdout.
+     */
+    void print() const;
+
+    /** @brief Get OS version. */
+    const std::string& osVersion() const;
+    /** @brief Get machine name. */
+    const std::string& machineName() const;
+    /** @brief Get host name. */
+    const std::string& hostName() const;
+
+  private:
+    /** @brief Properties. */
+    std::map<std::string, std::string> properties;
 };

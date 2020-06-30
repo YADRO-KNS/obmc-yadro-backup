@@ -3,17 +3,23 @@
 
 #include "manifest.hpp"
 
+#include <limits.h>
+#include <unistd.h>
+
 #include <fstream>
-#include <map>
 #include <regex>
 
 namespace fs = std::filesystem;
 
 /** @brief Name of the manifest file. */
-static const char* manifestFile = "bmc.manifest";
+static const std::string manifestFile = "bmc.manifest";
 
 /** @brief Name of OS version property. */
-static const char* osVersionProp = "VERSION";
+static const std::string osVersionProp = "VERSION";
+/** @brief Name of machine (platform) name property. */
+static const std::string machineNameProp = "MACHINE";
+/** @brief Name of host name property. */
+static const std::string hostNameProp = "HOSTNAME";
 
 /**
  * @brief Parse ini file.
@@ -39,7 +45,6 @@ static std::map<std::string, std::string> parseIni(const fs::path& iniFile)
     std::string line;
     while (std::getline(file, line))
     {
-
         std::smatch match;
         if (std::regex_match(line, match, iniRegex))
         {
@@ -52,39 +57,57 @@ static std::map<std::string, std::string> parseIni(const fs::path& iniFile)
     return data;
 }
 
-/**
- * @brief Create manifest from any ini file.
- *
- * @param[in] iniFile path to the ini file to parse
- *
- * @throw std::runtime_error in case of errors
- *
- * @return manifest instance
- */
-static Manifest fromIni(const std::filesystem::path& iniFile)
+Manifest::Manifest(const std::filesystem::path& rootFs)
 {
-    const std::map<std::string, std::string> ini = parseIni(iniFile);
-
-    const auto ver = ini.find(osVersionProp);
-    if (ver == ini.end())
+    const fs::path osRelease = rootFs / "etc/os-release";
+    const std::map<std::string, std::string> ini = parseIni(osRelease);
+    const std::map<std::string, std::string> osr{
+        {"OPENBMC_TARGET_MACHINE", machineNameProp},
+        {"VERSION", osVersionProp}};
+    for (const auto& it : osr)
     {
-        std::string err = "Invalid file format (VERSION field not found): ";
-        err += iniFile;
-        throw std::runtime_error(err);
+        const auto val = ini.find(it.first);
+        if (val == ini.end())
+        {
+            std::string err = "Invalid os-release file format: Property ";
+            err += it.first;
+            err += " not found in file ";
+            err += osRelease;
+            throw std::runtime_error(err);
+        }
+        properties.insert(std::make_pair(it.second, val->second));
     }
 
-    Manifest manifest{ver->second};
-    return manifest;
-}
-
-Manifest Manifest::fromOsRelease(const std::filesystem::path& rootFs)
-{
-    return fromIni(rootFs / "etc/os-release");
+    char hostname[HOST_NAME_MAX];
+    if (gethostname(hostname, sizeof(hostname)) != 0)
+    {
+        throw std::runtime_error("Unable to get host name");
+    }
+    properties.insert(std::make_pair(hostNameProp, hostname));
 }
 
 Manifest Manifest::load(const fs::path& dir)
 {
-    return fromIni(dir / manifestFile);
+    Manifest manifest;
+
+    const fs::path mnfFile = dir / manifestFile;
+    const std::map<std::string, std::string> ini = parseIni(mnfFile);
+
+    for (const auto& prop : {osVersionProp, machineNameProp, hostNameProp})
+    {
+        const auto val = ini.find(prop);
+        if (val == ini.end())
+        {
+            std::string err = "Invalid manifest file format: Property ";
+            err += prop;
+            err += " not found in file ";
+            err += mnfFile;
+            throw std::runtime_error(err);
+        }
+        manifest.properties.insert(*val);
+    }
+
+    return manifest;
 }
 
 void Manifest::save(const fs::path& dir) const
@@ -97,5 +120,31 @@ void Manifest::save(const fs::path& dir) const
         err += iniFile;
         throw std::runtime_error(err);
     }
-    file << osVersionProp << "=\"" << osVersion << '"' << std::endl;
+    for (const auto& it : properties)
+    {
+        file << it.first << "=\"" << it.second << '"' << std::endl;
+    }
+}
+
+void Manifest::print() const
+{
+    for (const auto& it : properties)
+    {
+        printf("%-8s : %s\n", it.first.c_str(), it.second.c_str());
+    }
+}
+
+const std::string& Manifest::osVersion() const
+{
+    return properties.find(osVersionProp)->second;
+}
+
+const std::string& Manifest::machineName() const
+{
+    return properties.find(machineNameProp)->second;
+}
+
+const std::string& Manifest::hostName() const
+{
+    return properties.find(hostNameProp)->second;
 }

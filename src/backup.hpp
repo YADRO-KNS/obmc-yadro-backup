@@ -39,6 +39,13 @@ class Backup
 
   private:
     /**
+     * @brief Check manifest of early created backup.
+     *
+     * @throw std::runtime_error in case of errors
+     */
+    void checkManifest() const;
+
+    /**
      * @brief Backup single file or directory.
      *
      * @param[in] path relative path to the file

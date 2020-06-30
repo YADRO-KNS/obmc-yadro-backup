@@ -57,7 +57,7 @@ void Backup::backup() const
         }
     }
 
-    const Manifest manifest = Manifest::fromOsRelease(config.rootFs);
+    const Manifest manifest(config.rootFs);
     manifest.save(tmpDir);
 
     callTar(false);
@@ -67,16 +67,7 @@ void Backup::restore() const
 {
     callTar(true);
 
-    const Manifest osRelease = Manifest::fromOsRelease(config.rootFs);
-    const Manifest manifest = Manifest::load(tmpDir);
-    if (osRelease.osVersion != manifest.osVersion)
-    {
-        std::string err = "OS version mismatch: current is ";
-        err += osRelease.osVersion;
-        err += ", but backup was created for ";
-        err += manifest.osVersion;
-        throw std::runtime_error(err);
-    }
+    checkManifest();
 
     if (config.handleAccounts)
     {
@@ -94,6 +85,41 @@ void Backup::restore() const
         for (const auto& it : networkConfigs)
         {
             restoreFile(it);
+        }
+    }
+}
+
+void Backup::checkManifest() const
+{
+    const Manifest mnfBackup = Manifest::load(tmpDir);
+    const Manifest mnfCurrent = Manifest(config.rootFs);
+
+    if (mnfBackup.machineName() != mnfCurrent.machineName())
+    {
+        std::string err = "Target machine type mismatch: current is ";
+        err += mnfCurrent.machineName();
+        err += ", but backup was created for ";
+        err += mnfBackup.machineName();
+        throw std::runtime_error(err);
+    }
+
+    printf("Restore from backup file %s\n", config.backupFile.c_str());
+    mnfBackup.print();
+    if (mnfBackup.osVersion() != mnfCurrent.osVersion())
+    {
+        printf("WARNING! OS version mismatch: current is %s, "
+               "but backup was created for %s\n",
+               mnfCurrent.osVersion().c_str(), mnfBackup.osVersion().c_str());
+    }
+
+    if (!config.unattendedMode)
+    {
+        printf("Do you want to continue? [y/N]: ");
+        char answer[2]; // first char with \0
+        fgets(answer, sizeof(answer), stdin);
+        if (*answer != 'y' && *answer != 'Y')
+        {
+            throw std::runtime_error("Aborted by user");
         }
     }
 }

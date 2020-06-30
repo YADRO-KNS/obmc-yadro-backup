@@ -45,17 +45,16 @@ class ManifestTest : public ::testing::Test
     fs::path dataDir;
 };
 
-TEST_F(ManifestTest, Load)
+TEST_F(ManifestTest, Serialize)
 {
+    // load
     const Manifest manifest = Manifest::load(dataDir);
-    EXPECT_EQ(manifest.osVersion, "v2.9.0-dev");
-}
+    EXPECT_EQ(manifest.osVersion(), "v2.9.0-dev");
+    EXPECT_EQ(manifest.machineName(), "nicole");
+    EXPECT_EQ(manifest.hostName(), "bmc");
 
-TEST_F(ManifestTest, Save)
-{
-    const Manifest manifest{"v2.9.0-dev"};
+    // save
     manifest.save(tmpDir);
-
     std::ifstream f1(tmpDir / "bmc.manifest", std::ifstream::binary);
     std::ifstream f2(dataDir / "bmc.manifest", std::ifstream::binary);
     const std::string s1((std::istreambuf_iterator<char>(f1)),
@@ -67,8 +66,10 @@ TEST_F(ManifestTest, Save)
     EXPECT_EQ(s1, s2);
 }
 
-TEST_F(ManifestTest, FromOsRelease)
+TEST_F(ManifestTest, Create)
 {
-    const Manifest m = Manifest::fromOsRelease(dataDir);
-    EXPECT_EQ(m.osVersion, "v2.9.0-dev");
+    const Manifest manifest(dataDir);
+    EXPECT_EQ(manifest.osVersion(), "v2.9.0-dev");
+    EXPECT_EQ(manifest.machineName(), "nicole");
+    EXPECT_FALSE(manifest.hostName().empty());
 }
