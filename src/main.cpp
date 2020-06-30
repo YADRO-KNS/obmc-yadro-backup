@@ -8,7 +8,7 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <optional>
+#include <cstring>
 #include <stdexcept>
 
 namespace fs = std::filesystem;
@@ -33,9 +33,7 @@ static void printHelp(const char* app)
     puts("OpenBMC backup tool.");
     puts("Copyright (c) 2020 YADRO.");
     puts("Version " VERSION);
-    printf("Usage: %s [OPTION...]\n", app);
-    puts("  -b, --backup=FILE    Backup current configuration to file");
-    puts("  -r, --restore=FILE   Restore configuration from backup file");
+    printf("Usage: %s [OPTION...] {backup|restore} FILE\n", app);
     puts("  -a, --skip-accounts  Skip accounts data");
     puts("  -n, --skip-network   Skip network configuration");
     puts("  -y, --yes            Do not ask for confirmation");
@@ -46,12 +44,9 @@ static void printHelp(const char* app)
 int main(int argc, char* argv[])
 {
     Configuration config;
-    std::optional<Operation> operation = std::nullopt;
 
     // clang-format off
     const struct option longOpts[] = {
-        {"backup",        required_argument, nullptr, 'b'},
-        {"restore",       required_argument, nullptr, 'r'},
         {"skip-accounts", no_argument,       nullptr, 'a'},
         {"skip-network",  no_argument,       nullptr, 'n'},
         {"yes",           no_argument,       nullptr, 'y'},
@@ -59,7 +54,7 @@ int main(int argc, char* argv[])
         {nullptr,         0,                 nullptr,  0 }
     };
     // clang-format on
-    const char* shortOpts = "b:r:anyh";
+    const char* shortOpts = "anyh";
 
     opterr = 0; // prevent native error messages
 
@@ -69,28 +64,6 @@ int main(int argc, char* argv[])
     {
         switch (val)
         {
-            case 'b':
-                if (operation.has_value())
-                {
-                    fprintf(stderr,
-                            "Mutually exclusive option: opeartion is "
-                            "already defined\n");
-                    return EXIT_FAILURE;
-                }
-                operation = Operation::backup;
-                config.backupFile = optarg;
-                break;
-            case 'r':
-                if (operation.has_value())
-                {
-                    fprintf(stderr,
-                            "Mutually exclusive option: opeartion is "
-                            "already defined\n");
-                    return EXIT_FAILURE;
-                }
-                operation = Operation::restore;
-                config.backupFile = optarg;
-                break;
             case 'a':
                 config.handleAccounts = false;
                 break;
@@ -108,21 +81,41 @@ int main(int argc, char* argv[])
                 return EXIT_FAILURE;
         }
     }
-    if (optind < argc)
+
+    // there are must be exactly 2 positional arguments (operation + file name)
+    if (optind + 2 > argc)
     {
-        fprintf(stderr, "Unexpected option: %s\n", argv[optind]);
+        fprintf(stderr,
+                "Invalid arguments: expected \"backup|restore FILE\"\n");
         return EXIT_FAILURE;
     }
-    if (!operation.has_value())
+    else if (optind + 2 < argc)
     {
-        fprintf(stderr, "Unknown operation, expected backup or restore\n");
+        fprintf(stderr, "Unexpected argument: %s\n", argv[optind + 2]);
         return EXIT_FAILURE;
     }
-    if (config.backupFile.empty())
+
+    // get operation type from positional argument
+    Operation operation;
+    if (strcmp(argv[optind], "backup") == 0)
     {
-        fprintf(stderr, "Backup file name can not be empty\n");
+        operation = Operation::backup;
+    }
+    else if (strcmp(argv[optind], "restore") == 0)
+    {
+        operation = Operation::restore;
+    }
+    else
+    {
+        fprintf(stderr,
+                "Invalid argument: %s, expected \"backup\" or \"restore\"\n",
+                argv[optind]);
         return EXIT_FAILURE;
     }
+    ++optind;
+
+    // get file name from positional argument
+    config.backupFile = argv[optind];
     if (operation == Operation::backup && fs::exists(config.backupFile))
     {
         fprintf(stderr, "Backup file already exists: %s\n",
