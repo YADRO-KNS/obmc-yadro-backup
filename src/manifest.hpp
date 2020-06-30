@@ -52,6 +52,8 @@ class Manifest
 
     /** @brief Get OS version. */
     const std::string& osVersion() const;
+    /** @brief Get OS version as numeric format for campare. */
+    uint32_t osVersionNumber() const;
     /** @brief Get machine name. */
     const std::string& machineName() const;
     /** @brief Get host name. */

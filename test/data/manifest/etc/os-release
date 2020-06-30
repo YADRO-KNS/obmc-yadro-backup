@@ -1,7 +1,7 @@
 ID=openbmc-openpower
 NAME="Phosphor OpenBMC (Phosphor OpenBMC Project Reference Distro)"
-VERSION="v2.9.0-dev"
+VERSION="v2.190.0-dev"
 VERSION_ID=v2.9.0-dev-169-gfb0a24593
 PRETTY_NAME="Phosphor OpenBMC (Phosphor OpenBMC Project Reference Distro) v2.9.0-dev"
-BUILD_ID="v2.9.0-dev"
+BUILD_ID="v2.190.0-dev"
 OPENBMC_TARGET_MACHINE="nicole"

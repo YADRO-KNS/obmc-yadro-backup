@@ -49,9 +49,10 @@ TEST_F(ManifestTest, Serialize)
 {
     // load
     const Manifest manifest = Manifest::load(dataDir);
-    EXPECT_EQ(manifest.osVersion(), "v2.9.0-dev");
+    EXPECT_EQ(manifest.osVersion(), "v2.190.0-dev");
     EXPECT_EQ(manifest.machineName(), "nicole");
     EXPECT_EQ(manifest.hostName(), "bmc");
+    EXPECT_EQ(manifest.osVersionNumber(), (2 << 16) | 190);
 
     // save
     manifest.save(tmpDir);
@@ -69,7 +70,7 @@ TEST_F(ManifestTest, Serialize)
 TEST_F(ManifestTest, Create)
 {
     const Manifest manifest(dataDir);
-    EXPECT_EQ(manifest.osVersion(), "v2.9.0-dev");
+    EXPECT_EQ(manifest.osVersion(), "v2.190.0-dev");
     EXPECT_EQ(manifest.machineName(), "nicole");
     EXPECT_FALSE(manifest.hostName().empty());
 }

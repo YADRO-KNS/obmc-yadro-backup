@@ -139,6 +139,19 @@ const std::string& Manifest::osVersion() const
     return properties.find(osVersionProp)->second;
 }
 
+uint32_t Manifest::osVersionNumber() const
+{
+    const std::regex verRegex("v([0-9]+)\\.([0-9]+).*");
+    std::smatch match;
+    if (std::regex_match(osVersion(), match, verRegex))
+    {
+        const uint16_t major = std::stoul(match[1].str());
+        const uint16_t minor = std::stoul(match[2].str());
+        return major << 16 | minor;
+    }
+    return 0;
+}
+
 const std::string& Manifest::machineName() const
 {
     return properties.find(machineNameProp)->second;

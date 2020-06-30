@@ -131,11 +131,26 @@ void Backup::checkManifest() const
 
     printf("Restore from backup file %s\n", archiveFile.c_str());
     mnfBackup.print();
-    if (mnfBackup.osVersion() != mnfCurrent.osVersion())
+
+    // Check versions
+    const uint32_t bkpVer = mnfBackup.osVersionNumber();
+    const uint32_t curVer = mnfCurrent.osVersionNumber();
+    if (bkpVer > curVer)
     {
-        printf("WARNING! OS version mismatch: current is %s, "
-               "but backup was created for %s\n",
-               mnfCurrent.osVersion().c_str(), mnfBackup.osVersion().c_str());
+        fprintf(stderr, "ERROR: Backup was created for newer BMC version %s.\n",
+                mnfBackup.osVersion().c_str());
+        fprintf(stderr, "Current BMC version: %s.\n",
+                mnfCurrent.osVersion().c_str());
+        throw std::runtime_error("Downgrading configuration is not possible");
+    }
+    if (bkpVer < curVer)
+    {
+        printf("WARNING! Backup was created for older BMC version %s.\n",
+               mnfBackup.osVersion().c_str());
+        fprintf(stderr, "Current BMC version: %s.\n",
+                mnfCurrent.osVersion().c_str());
+        puts(
+            "Restoring from this backup may cause the BMC to become unstable!");
     }
 
     if (!unattendedMode)
