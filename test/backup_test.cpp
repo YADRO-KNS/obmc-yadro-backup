@@ -78,13 +78,12 @@ TEST_F(BackupTest, BackupFull)
 {
     const fs::path arc = tmpDir / "backup.tar.gz";
 
-    Configuration conf;
-    conf.unattendedMode = true;
-    conf.backupFile = arc;
-    conf.rootFs = rwRoot;
-    conf.readOnlyFs = roRoot;
+    Backup bk;
+    bk.unattendedMode = true;
+    bk.archiveFile = arc;
+    bk.rootFs = rwRoot;
+    bk.readOnlyFs = roRoot;
 
-    Backup bk(conf);
     bk.backup();
 
     const std::set<std::string> real = fileList(arc);
@@ -112,14 +111,13 @@ TEST_F(BackupTest, BackupNoAcc)
 {
     const fs::path arc = tmpDir / "backup.tar.gz";
 
-    Configuration conf;
-    conf.unattendedMode = true;
-    conf.backupFile = arc;
-    conf.handleAccounts = false;
-    conf.rootFs = rwRoot;
-    conf.readOnlyFs = roRoot;
+    Backup bk;
+    bk.unattendedMode = true;
+    bk.archiveFile = arc;
+    bk.handleAccounts = false;
+    bk.rootFs = rwRoot;
+    bk.readOnlyFs = roRoot;
 
-    Backup bk(conf);
     bk.backup();
 
     const std::set<std::string> real = fileList(arc);
@@ -145,15 +143,14 @@ TEST_F(BackupTest, BackupNoAccNoNet)
 {
     const fs::path arc = tmpDir / "backup.tar.gz";
 
-    Configuration conf;
-    conf.unattendedMode = true;
-    conf.backupFile = arc;
-    conf.handleAccounts = false;
-    conf.handleNetwork = false;
-    conf.rootFs = rwRoot;
-    conf.readOnlyFs = roRoot;
+    Backup bk;
+    bk.unattendedMode = true;
+    bk.archiveFile = arc;
+    bk.handleAccounts = false;
+    bk.handleNetwork = false;
+    bk.rootFs = rwRoot;
+    bk.readOnlyFs = roRoot;
 
-    Backup bk(conf);
     bk.backup();
 
     const std::set<std::string> real = fileList(arc);
@@ -172,16 +169,15 @@ TEST_F(BackupTest, Restore)
 {
     const fs::path arc = tmpDir / "backup.tar.gz";
 
-    Configuration conf;
-    conf.unattendedMode = true;
-    conf.backupFile = arc;
-    conf.rootFs = rwRoot;
-    conf.readOnlyFs = roRoot;
+    Backup bk;
+    bk.unattendedMode = true;
+    bk.archiveFile = arc;
+    bk.rootFs = rwRoot;
+    bk.readOnlyFs = roRoot;
 
-    Backup bk(conf);
     bk.backup();
 
-    conf.rootFs = tmpDir;
+    bk.rootFs = tmpDir;
     fs::create_directory(tmpDir / "etc");
     fs::create_symlink(rwRoot / "etc/os-release", tmpDir / "etc/os-release");
     bk.restore();

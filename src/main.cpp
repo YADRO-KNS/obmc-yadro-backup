@@ -43,7 +43,7 @@ static void printHelp(const char* app)
 /** @brief Application entry point. */
 int main(int argc, char* argv[])
 {
-    Configuration config;
+    Backup backup;
 
     // clang-format off
     const struct option longOpts[] = {
@@ -65,13 +65,13 @@ int main(int argc, char* argv[])
         switch (val)
         {
             case 'a':
-                config.handleAccounts = false;
+                backup.handleAccounts = false;
                 break;
             case 'n':
-                config.handleNetwork = false;
+                backup.handleNetwork = false;
                 break;
             case 'y':
-                config.unattendedMode = true;
+                backup.unattendedMode = true;
                 break;
             case 'h':
                 printHelp(argv[0]);
@@ -83,15 +83,16 @@ int main(int argc, char* argv[])
     }
 
     // there are must be exactly 2 positional arguments (operation + file name)
-    if (optind + 2 > argc)
+    const int maxArgc = optind + 2;
+    if (maxArgc > argc)
     {
         fprintf(stderr,
                 "Invalid arguments: expected \"backup|restore FILE\"\n");
         return EXIT_FAILURE;
     }
-    else if (optind + 2 < argc)
+    else if (maxArgc < argc)
     {
-        fprintf(stderr, "Unexpected argument: %s\n", argv[optind + 2]);
+        fprintf(stderr, "Unexpected argument: %s\n", argv[maxArgc]);
         return EXIT_FAILURE;
     }
 
@@ -115,31 +116,23 @@ int main(int argc, char* argv[])
     ++optind;
 
     // get file name from positional argument
-    config.backupFile = argv[optind];
-    if (operation == Operation::backup && fs::exists(config.backupFile))
+    backup.archiveFile = argv[optind];
+    if (backup.archiveFile.empty())
     {
-        fprintf(stderr, "Backup file already exists: %s\n",
-                config.backupFile.c_str());
-        return EXIT_FAILURE;
-    }
-    if (operation == Operation::restore && !fs::exists(config.backupFile))
-    {
-        fprintf(stderr, "Backup file not found: %s\n",
-                config.backupFile.c_str());
+        fprintf(stderr, "Backup file name can not be empty\n");
         return EXIT_FAILURE;
     }
 
     try
     {
-        Backup bk(config);
         if (operation == Operation::backup)
         {
-            bk.backup();
-            printf("Backup created: %s\n", config.backupFile.c_str());
+            backup.backup();
+            printf("Backup created: %s\n", backup.archiveFile.c_str());
         }
         else
         {
-            bk.restore();
+            backup.restore();
             puts("Configuration was restored.");
             puts("Please reboot the BMC to apply changes.");
         }

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "configuration.hpp"
+#include <filesystem>
 
 /**
  * @class Backup
@@ -12,15 +12,6 @@
 class Backup
 {
   public:
-    /**
-     * @brief Constructor.
-     *
-     * @param[in] cfg configuration of the backup/restore procedure
-     *
-     * @throw std::exception in case of errors
-     */
-    Backup(const Configuration& cfg);
-
     ~Backup();
 
     /**
@@ -28,16 +19,25 @@ class Backup
      *
      * @throw std::exception in case of errors
      */
-    void backup() const;
+    void backup();
 
     /**
      * @brief Restore OpenBMC configuration.
      *
      * @throw std::exception in case of errors
      */
-    void restore() const;
+    void restore();
 
   private:
+    /**
+     * @brief Create temp directory.
+     *
+     * @throw std::system_error in case of other errors
+     *
+     * @return path to the created dir
+     */
+    std::filesystem::path createTempDir() const;
+
     /**
      * @brief Check manifest of early created backup.
      *
@@ -72,9 +72,21 @@ class Backup
      */
     void callTar(bool extract) const;
 
+  public:
+    /** @brief Unattended mode (enable/disable flag). */
+    bool unattendedMode = false;
+    /** @brief Handle accounts data (enable/disable flag). */
+    bool handleAccounts = true;
+    /** @brief Handle network configuration (enable/disable flag). */
+    bool handleNetwork = true;
+    /** @brief Path to the backup archive file. */
+    std::filesystem::path archiveFile;
+    /** @brief Path to the root file system. */
+    std::filesystem::path rootFs = "/";
+    /** @brief Path to the read only file system. */
+    std::filesystem::path readOnlyFs = "/run/initramfs/ro";
+
   private:
-    /** @brief Configuration of the backup/restore procedure. */
-    const Configuration& config;
     /** @brief Temporary directory used for unpacked data. */
     std::filesystem::path tmpDir;
 };
