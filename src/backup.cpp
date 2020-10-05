@@ -157,8 +157,8 @@ void Backup::checkManifest() const
     {
         printf("Do you want to continue? [y/N]: ");
         char answer[2]; // first char with \0
-        fgets(answer, sizeof(answer), stdin);
-        if (*answer != 'y' && *answer != 'Y')
+        if (!fgets(answer, sizeof(answer), stdin) ||
+            (*answer != 'y' && *answer != 'Y'))
         {
             throw std::runtime_error("Aborted by user");
         }
